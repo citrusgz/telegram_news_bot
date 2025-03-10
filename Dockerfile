@@ -8,7 +8,9 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libxss1 \
     libasound2 \
-    xvfb
+    xvfb \
+    libnspr4 \
+    libgbm1
 
 WORKDIR /app
 
