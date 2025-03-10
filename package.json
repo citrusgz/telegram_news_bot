@@ -3,5 +3,9 @@
     "dotenv": "^16.4.7",
     "node-telegram-bot-api": "^0.66.0",
     "playwright": "^1.51.0"
+  },
+  "scripts": {
+    "start": "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' node newSender.js",
+    "postinstall": "playwright install"
   }
 }
