@@ -34,9 +34,8 @@ async function scrapeAndPost() {
                 console.log('Mensagem enviada com sucesso!');
                 messageCount++;
                 if (messageCount >= 3) {
-                    newIds.length = 0;
+                    newIds.splice(0, newIds.length - 1);
                     messageCount = 0;
-                    console.log('Array newIds foi limpo.');
                 }
             })
             .catch((error) => {
@@ -48,6 +47,6 @@ async function scrapeAndPost() {
     await browser.close();
 }
 
-setInterval(scrapeAndPost, 5 * 60 * 1000);
+setInterval(scrapeAndPost, 3 * 60 * 1000);
 
 scrapeAndPost();
