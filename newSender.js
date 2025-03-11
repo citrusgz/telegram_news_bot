@@ -10,7 +10,6 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 const url = process.env.URL;
 
 const newIds = [];
-let messageCount = 0;
 
 async function scrapeAndPost() {
     const browser = await chromium.launch({ headless: false });
@@ -18,25 +17,26 @@ async function scrapeAndPost() {
 
     await page.goto(url);
 
-    const ids = await page.$$eval('.post-container > div', divs => divs.map(div => div.id).slice(0, 1));
+    const posts = await page.$$eval('.post-container > div', divs => divs.map(div => {
+        const id = div.id;
+        const date = div.querySelector('.post-date').textContent;
+        return { id, date };
+    }));
 
-    for (const id of ids) {
-        if (!newIds.includes(id)) {
-            newIds.push(id);
+    const latestDate = posts[0].date;
 
-            const { href, title } = await page.$eval(`#${id} .post-title a`, a => ({ href: a.href, title: a.textContent }));
-            const meta = await page.$eval(`#${id} .post-meta a:nth-of-type(2)`, a => a.textContent);
+    for (const post of posts) {
+        if (post.date === latestDate && !newIds.includes(post.id)) {
+            newIds.push(post.id);
+
+            const { href, title } = await page.$eval(`#${post.id} .post-title a`, a => ({ href: a.href, title: a.textContent }));
+            const meta = await page.$eval(`#${post.id} .post-meta a:nth-of-type(2)`, a => a.textContent);
 
             console.log(`Novo post encontrado: ${title} - ${href} - ${meta}`);
 
             await bot.sendMessage(chatId, `Por ${meta} - <a href="${href}">${title}</a>`, { parse_mode: 'HTML' })
             .then(() => {
                 console.log('Mensagem enviada com sucesso!');
-                messageCount++;
-                if (messageCount >= 3) {
-                    newIds.splice(0, newIds.length - 1);
-                    messageCount = 0;
-                }
             })
             .catch((error) => {
                 console.error('Erro ao enviar mensagem:', error);
